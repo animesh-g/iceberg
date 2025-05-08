@@ -93,23 +93,23 @@ public class GCSIOBenchmark {
     }
   }
 
-  @Benchmark
-  public long readSmallFile() throws IOException {
-    InputFile inputFile = gcsFileIO.newInputFile(testFilePathSmall);
-    // System.out.println("inputfile"+ inputFile)
-    long totalBytesRead = 0;
-    try (InputStream stream = inputFile.newStream()) {
-      int bytesRead;
-      while ((bytesRead = stream.read(buffer)) != -1) {
-        totalBytesRead += bytesRead;
-      }
-    }
-    // System.out.println("totalbytesread"+totalBytesRead);
-    return totalBytesRead;
-  }
+//  @Benchmark
+//  public long readSmallFile() throws IOException {
+//    InputFile inputFile = gcsFileIO.newInputFile(testFilePathSmall);
+//    // System.out.println("inputfile"+ inputFile)
+//    long totalBytesRead = 0;
+//    try (InputStream stream = inputFile.newStream()) {
+//      int bytesRead;
+//      while ((bytesRead = stream.read(buffer)) != -1) {
+//        totalBytesRead += bytesRead;
+//      }
+//    }
+//    // System.out.println("totalbytesread"+totalBytesRead);
+//    return totalBytesRead;
+//  }
 
   @Benchmark
-  public long readSmallFileHadoop() throws IOException {
+  public long readSmallFile() throws IOException {
     InputFile inputFile = hadoopFileIO.newInputFile(testFilePathSmall);
     // System.out.println("inputfile"+ inputFile)
     long totalBytesRead = 0;
