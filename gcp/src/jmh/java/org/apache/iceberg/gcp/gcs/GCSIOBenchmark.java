@@ -66,7 +66,7 @@ public class GCSIOBenchmark {
     gcsFileIO = new GCSFileIO();
     Map<String, String> properties = Maps.newHashMap();
     // Configure GCPProperties:
-    properties.put(GCPProperties.GCS_PROJECT_ID, "shubham-prelaunch-testing");
+    properties.put(GCPProperties.GCS_PROJECT_ID, "animgupt-gcs-prober");
     // properties.put(GCPProperties.GCS_SERVICE_ACCOUNT_KEY_FILE, "/path/to/your/key.json");
     // Or ensure Application Default Credentials are set up in the environment.
     gcsFileIO.initialize(properties);
@@ -75,7 +75,7 @@ public class GCSIOBenchmark {
     hadoopFileIO.initialize(properties);
 
     // Define paths to pre-existing test files in your GCS bucket
-    testFilePathSmall = "gs://iceberg-testing/output.parquet";
+    testFilePathSmall = "gs://animgupt-iceberg-test/output.parquet";
     // testFilePathLarge = "gs://your-benchmark-bucket/test-data/large-file.parquet";
 
     // Create dummy files in GCS if they don't exist or ensure they are present
@@ -93,23 +93,23 @@ public class GCSIOBenchmark {
     }
   }
 
-//  @Benchmark
-//  public long readSmallFile() throws IOException {
-//    InputFile inputFile = gcsFileIO.newInputFile(testFilePathSmall);
-//    // System.out.println("inputfile"+ inputFile)
-//    long totalBytesRead = 0;
-//    try (InputStream stream = inputFile.newStream()) {
-//      int bytesRead;
-//      while ((bytesRead = stream.read(buffer)) != -1) {
-//        totalBytesRead += bytesRead;
-//      }
-//    }
-//    // System.out.println("totalbytesread"+totalBytesRead);
-//    return totalBytesRead;
-//  }
-
   @Benchmark
   public long readSmallFile() throws IOException {
+    InputFile inputFile = gcsFileIO.newInputFile(testFilePathSmall);
+    // System.out.println("inputfile"+ inputFile)
+    long totalBytesRead = 0;
+    try (InputStream stream = inputFile.newStream()) {
+      int bytesRead;
+      while ((bytesRead = stream.read(buffer)) != -1) {
+        totalBytesRead += bytesRead;
+      }
+    }
+    System.out.println("nonhadoop totalbytesread" + totalBytesRead);
+    return totalBytesRead;
+  }
+
+  @Benchmark
+  public long readSmallFileHadoop() throws IOException {
     InputFile inputFile = hadoopFileIO.newInputFile(testFilePathSmall);
     // System.out.println("inputfile"+ inputFile)
     long totalBytesRead = 0;
@@ -119,7 +119,7 @@ public class GCSIOBenchmark {
         totalBytesRead += bytesRead;
       }
     }
-    // System.out.println("totalbytesread"+totalBytesRead);
+    System.out.println("hadoop totalbytesread" + totalBytesRead);
     return totalBytesRead;
   }
 }
