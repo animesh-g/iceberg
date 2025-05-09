@@ -110,12 +110,16 @@ public class GCSIOBenchmark {
 
   @Benchmark
   public long readSmallFileHadoop() throws IOException {
+    System.out.println("Inside readSmallFileHadoop method");
+
     InputFile inputFile = hadoopFileIO.newInputFile(testFilePathSmall);
-    // System.out.println("inputfile"+ inputFile)
+    System.out.println("After creating input file from hadoopFileIO");
     long totalBytesRead = 0;
     try (InputStream stream = inputFile.newStream()) {
       int bytesRead;
+      System.out.println("Reading started");
       while ((bytesRead = stream.read(buffer)) != -1) {
+        System.out.println("Reading buffer");
         totalBytesRead += bytesRead;
       }
     }
