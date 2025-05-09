@@ -59,7 +59,7 @@ public class GCSIOBenchmark {
   private GCSFileIO gcsFileIO;
   private HadoopFileIO hadoopFileIO;
   private String testFilePathSmall; // gs://your-bucket/path/to/small-file.parquet
-  // private String testFilePathLarge; // gs://your-bucket/path/to/large-file.parquet
+  private String testFilePathLarge; // gs://your-bucket/path/to/large-file.parquet
   private byte[] buffer;
 
   @Setup
@@ -81,6 +81,7 @@ public class GCSIOBenchmark {
 
     // Define paths to pre-existing test files in your GCS bucket
     testFilePathSmall = "gs://animgupt-iceberg-test/output.parquet";
+    testFilePathLarge = "gs://animgupt-iceberg-test/output_large.csv";
     // testFilePathLarge = "gs://your-benchmark-bucket/test-data/large-file.parquet";
 
     // Create dummy files in GCS if they don't exist or ensure they are present
@@ -100,7 +101,7 @@ public class GCSIOBenchmark {
   }
 
   @Benchmark
-  public long readSmallFile() throws IOException {
+  public long readSmallFileGCSIo() throws IOException {
     InputFile inputFile = gcsFileIO.newInputFile(testFilePathSmall);
     // System.out.println("inputfile"+ inputFile)
     long totalBytesRead = 0;
@@ -109,35 +110,23 @@ public class GCSIOBenchmark {
       while ((bytesRead = stream.read(buffer)) != -1) {
         totalBytesRead += bytesRead;
       }
+    } catch (IOException e) {
+      System.err.println("ERROR during stream reading: " + e.getMessage());
+      e.printStackTrace(System.err);
+      return -1;
     }
-    System.out.println("nonhadoop totalbytesread" + totalBytesRead);
+    //    System.out.println("nonhadoop totalbytesread" + totalBytesRead);
     return totalBytesRead;
   }
 
   @Benchmark
-  public long readSmallFileHadoop() throws IOException {
-    System.out.println("Inside readSmallFileHadoop method");
+  public long readSmallFileHadoopIo() throws IOException {
     InputFile inputFile = null;
-    try {
-      inputFile = hadoopFileIO.newInputFile(testFilePathSmall);
-      System.out.println("After creating input file from hadoopFileIO");
-    } catch (Throwable t) {
-      System.err.println("ERROR creating input file: " + t.getMessage());
-      t.printStackTrace(System.err);
-      return -1;
-    }
-
-    if (inputFile == null) {
-      System.err.println("InputFile is null after try-catch, cannot proceed.");
-      return -2;
-    }
-
-    System.out.println("After creating input file from hadoopFileIO");
+    inputFile = hadoopFileIO.newInputFile(testFilePathSmall);
 
     long totalBytesRead = 0;
     try (InputStream stream = inputFile.newStream()) {
       int bytesRead;
-      System.out.println("Reading started");
       while ((bytesRead = stream.read(buffer)) != -1) {
         //        System.out.println("Reading buffer");
         totalBytesRead += bytesRead;
@@ -145,9 +134,47 @@ public class GCSIOBenchmark {
     } catch (IOException e) {
       System.err.println("ERROR during stream reading: " + e.getMessage());
       e.printStackTrace(System.err);
-      return -3;
+      return -1;
     }
-    System.out.println("hadoop totalbytesread" + totalBytesRead);
+    return totalBytesRead;
+  }
+
+  @Benchmark
+  public long readLargeFileGCSIo() throws IOException {
+    InputFile inputFile = gcsFileIO.newInputFile(testFilePathLarge);
+    // System.out.println("inputfile"+ inputFile)
+    long totalBytesRead = 0;
+    try (InputStream stream = inputFile.newStream()) {
+      int bytesRead;
+      while ((bytesRead = stream.read(buffer)) != -1) {
+        totalBytesRead += bytesRead;
+      }
+    } catch (IOException e) {
+      System.err.println("ERROR during stream reading: " + e.getMessage());
+      e.printStackTrace(System.err);
+      return -1;
+    }
+    //    System.out.println("nonhadoop totalbytesread" + totalBytesRead);
+    return totalBytesRead;
+  }
+
+  @Benchmark
+  public long readLargeFileHadoopIo() throws IOException {
+    InputFile inputFile = null;
+    inputFile = hadoopFileIO.newInputFile(testFilePathLarge);
+
+    long totalBytesRead = 0;
+    try (InputStream stream = inputFile.newStream()) {
+      int bytesRead;
+      while ((bytesRead = stream.read(buffer)) != -1) {
+        //        System.out.println("Reading buffer");
+        totalBytesRead += bytesRead;
+      }
+    } catch (IOException e) {
+      System.err.println("ERROR during stream reading: " + e.getMessage());
+      e.printStackTrace(System.err);
+      return -1;
+    }
     return totalBytesRead;
   }
 }
