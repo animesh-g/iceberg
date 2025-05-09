@@ -121,8 +121,7 @@ public class GCSIOBenchmark {
 
   @Benchmark
   public long readSmallFileHadoopIo() throws IOException {
-    InputFile inputFile = null;
-    inputFile = hadoopFileIO.newInputFile(testFilePathSmall);
+    InputFile inputFile  = hadoopFileIO.newInputFile(testFilePathSmall);
 
     long totalBytesRead = 0;
     try (InputStream stream = inputFile.newStream()) {
@@ -160,8 +159,7 @@ public class GCSIOBenchmark {
 
   @Benchmark
   public long readLargeFileHadoopIo() throws IOException {
-    InputFile inputFile = null;
-    inputFile = hadoopFileIO.newInputFile(testFilePathLarge);
+    InputFile inputFile = hadoopFileIO.newInputFile(testFilePathLarge);
 
     long totalBytesRead = 0;
     try (InputStream stream = inputFile.newStream()) {
