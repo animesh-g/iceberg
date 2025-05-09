@@ -670,7 +670,7 @@ project(':iceberg-gcp') {
     api project(':iceberg-api')
     implementation project(':iceberg-common')
     implementation project(':iceberg-core')
-    implementation("com.google.cloud.bigdataoss:gcs-connector:3.0.5")
+    implementation("com.google.cloud.bigdataoss:gcs-connector:hadoop3-2.2.20:shaded")
 
     compileOnly platform(libs.google.libraries.bom)
     compileOnly "com.google.cloud:google-cloud-storage"
