@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.iceberg.gcp.GCPProperties;
 import org.apache.iceberg.hadoop.HadoopFileIO;
 import org.apache.iceberg.io.InputFile;
@@ -71,7 +72,11 @@ public class GCSIOBenchmark {
     // Or ensure Application Default Credentials are set up in the environment.
     gcsFileIO.initialize(properties);
 
-    hadoopFileIO = new HadoopFileIO();
+    Configuration conf = new Configuration();
+    conf.set("fs.gs.impl", "com.google.cloud.hadoop.fs.gcs.GoogleHadoopFileSystem");
+    conf.set("fs.AbstractFileSystem.gs.impl", "com.google.cloud.hadoop.fs.gcs.GoogleHadoopFS");
+
+    hadoopFileIO = new HadoopFileIO(conf);
     hadoopFileIO.initialize(properties);
 
     // Define paths to pre-existing test files in your GCS bucket
@@ -84,6 +89,7 @@ public class GCSIOBenchmark {
 
     buffer = new byte[8192]; // 8KB buffer for reading
     System.out.println("Buffer size: " + buffer.length);
+    System.out.println("HadoopFileIO initialized for GCS: " + (this.hadoopFileIO != null));
   }
 
   @TearDown()
