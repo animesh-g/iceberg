@@ -190,7 +190,7 @@ public class GCSIOBenchmark {
 
     // System.out.println("inputfile"+ inputFile)
     long totalBytesRead = 0;
-    for (int i = 1; i <= 10; i++) {
+    for (int i = 1; i <= 100; i++) {
       InputFile inputFile = gcsFileIO.newInputFile(testFilePathLarge + "lineitem.parquet." + i);
       try (InputStream stream = inputFile.newStream()) {
         int bytesRead;
@@ -211,7 +211,7 @@ public class GCSIOBenchmark {
   public long readLargeFileHadoopIo() throws IOException {
 
     long totalBytesRead = 0;
-    for (int i = 1; i <= 10; i++) {
+    for (int i = 1; i <= 100; i++) {
       InputFile inputFile = gcsFileIO.newInputFile(testFilePathLarge + "lineitem.parquet." + i);
       try (InputStream stream = inputFile.newStream()) {
         int bytesRead;
