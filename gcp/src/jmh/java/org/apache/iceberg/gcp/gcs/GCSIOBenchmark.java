@@ -21,6 +21,7 @@ package org.apache.iceberg.gcp.gcs;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -105,7 +106,7 @@ public class GCSIOBenchmark {
 
   private final String BASE_PATH = "gs://animgupt-iceberg-test/benchmark_write_table/"; // Example
   private final int NUM_FILES = 10; // Example for N
-  private final byte[] RECORD_DATA = "sample,record,data\n".getBytes();
+  private final byte[] RECORD_DATA = "sample,record,data\n".getBytes(Charset.defaultCharset());
 
   @Benchmark
   public void writeNFilesAndSuccessGCS() throws IOException {
