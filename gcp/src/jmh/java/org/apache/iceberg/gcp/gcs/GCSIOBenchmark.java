@@ -18,10 +18,10 @@
  */
 package org.apache.iceberg.gcp.gcs;
 
-import com.google.common.collect.Maps;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import org.apache.hadoop.conf.Configuration;
@@ -67,7 +67,8 @@ public class GCSIOBenchmark {
   @Setup
   public void before() throws IOException {
     gcsFileIO = new GCSFileIO();
-    Map<String, String> properties = Maps.newHashMap();
+    Map<String, String> properties = new HashMap<>();
+    ;
     // Configure GCPProperties:
     properties.put(GCPProperties.GCS_PROJECT_ID, "animgupt-gcs-prober");
     // properties.put(GCPProperties.GCS_SERVICE_ACCOUNT_KEY_FILE, "/path/to/your/key.json");
