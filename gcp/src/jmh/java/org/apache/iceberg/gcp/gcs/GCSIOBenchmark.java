@@ -21,12 +21,14 @@ package org.apache.iceberg.gcp.gcs;
 import com.google.common.collect.Maps;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.iceberg.gcp.GCPProperties;
 import org.apache.iceberg.hadoop.HadoopFileIO;
 import org.apache.iceberg.io.InputFile;
+import org.apache.iceberg.io.OutputFile;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
 import org.openjdk.jmh.annotations.Fork;
@@ -100,7 +102,43 @@ public class GCSIOBenchmark {
     }
   }
 
+  private final String BASE_PATH = "gs://animgupt-iceberg-test/benchmark_write_table/"; // Example
+  private final int NUM_FILES = 10; // Example for N
+  private final byte[] RECORD_DATA = "sample,record,data\n".getBytes();
+
   @Benchmark
+  public void writeNFilesAndSuccessGCS() throws IOException {
+    for (int i = 0; i < NUM_FILES; i++) {
+      String filePath = BASE_PATH + "data_part_0000" + i + ".csv";
+      OutputFile outputFile = gcsFileIO.newOutputFile(filePath);
+      try (OutputStream os = outputFile.createOrOverwrite()) { // or create()
+        os.write(RECORD_DATA);
+      }
+    }
+    String successFilePath = BASE_PATH + "_SUCCESS";
+    OutputFile successFile = gcsFileIO.newOutputFile(successFilePath);
+    try (OutputStream os = successFile.createOrOverwrite()) {
+      // Empty file, nothing to write
+    }
+  }
+
+  @Benchmark
+  public void writeNFilesAndSuccessHadoop() throws IOException {
+    for (int i = 0; i < NUM_FILES; i++) {
+      String filePath = BASE_PATH + "data_part_0000" + i + ".csv";
+      OutputFile outputFile = hadoopFileIO.newOutputFile(filePath);
+      try (OutputStream os = outputFile.createOrOverwrite()) { // or create()
+        os.write(RECORD_DATA);
+      }
+    }
+    String successFilePath = BASE_PATH + "_SUCCESS";
+    OutputFile successFile = hadoopFileIO.newOutputFile(successFilePath);
+    try (OutputStream os = successFile.createOrOverwrite()) {
+      // Empty file, nothing to write
+    }
+  }
+
+  //  @Benchmark
   public long readSmallFileGCSIo() throws IOException {
     InputFile inputFile = gcsFileIO.newInputFile(testFilePathSmall);
     // System.out.println("inputfile"+ inputFile)
@@ -119,7 +157,7 @@ public class GCSIOBenchmark {
     return totalBytesRead;
   }
 
-  @Benchmark
+  //  @Benchmark
   public long readSmallFileHadoopIo() throws IOException {
     InputFile inputFile = hadoopFileIO.newInputFile(testFilePathSmall);
 
@@ -138,7 +176,7 @@ public class GCSIOBenchmark {
     return totalBytesRead;
   }
 
-  @Benchmark
+  //  @Benchmark
   public long readLargeFileGCSIo() throws IOException {
     InputFile inputFile = gcsFileIO.newInputFile(testFilePathLarge);
     // System.out.println("inputfile"+ inputFile)
@@ -157,7 +195,7 @@ public class GCSIOBenchmark {
     return totalBytesRead;
   }
 
-  @Benchmark
+  //  @Benchmark
   public long readLargeFileHadoopIo() throws IOException {
     InputFile inputFile = hadoopFileIO.newInputFile(testFilePathLarge);
 
