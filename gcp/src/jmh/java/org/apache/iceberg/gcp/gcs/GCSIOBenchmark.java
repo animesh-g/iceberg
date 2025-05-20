@@ -110,7 +110,7 @@ public class GCSIOBenchmark {
   private final int NUM_FILES = 10; // Example for N
   private final byte[] RECORD_DATA = "sample,record,data\n".getBytes(Charset.defaultCharset());
 
-  @Benchmark
+  //  @Benchmark
   public void writeNFilesAndSuccessGCS() throws IOException {
     for (int i = 0; i < NUM_FILES; i++) {
       String filePath = BASE_PATH + "data_part_0000" + i + ".csv";
@@ -128,11 +128,16 @@ public class GCSIOBenchmark {
 
   @Benchmark
   public void writeNFilesAndSuccessHadoop() throws IOException {
+
     for (int i = 0; i < NUM_FILES; i++) {
       String filePath = BASE_PATH_HADOOP + "data_part_0000" + i + ".csv";
       OutputFile outputFile = hadoopFileIO.newOutputFile(filePath);
       try (OutputStream os = outputFile.createOrOverwrite()) { // or create()
         os.write(RECORD_DATA);
+      } catch (IOException e) {
+        System.err.println("ERROR during stream writing: " + e.getMessage());
+        e.printStackTrace(System.err);
+        return;
       }
     }
     String successFilePath = BASE_PATH_HADOOP + "_SUCCESS";
