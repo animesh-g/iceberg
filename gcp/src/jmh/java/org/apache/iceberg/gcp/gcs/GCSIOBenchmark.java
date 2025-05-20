@@ -85,7 +85,7 @@ public class GCSIOBenchmark {
 
     // Define paths to pre-existing test files in your GCS bucket
     testFilePathSmall = "gs://animgupt-iceberg-test/output.parquet";
-    testFilePathLarge = "gs://animgupt-iceberg-test/output_large.csv";
+    testFilePathLarge = "gs://animgupt-iceberg-test/lineitem_table2/";
     // testFilePathLarge = "gs://your-benchmark-bucket/test-data/large-file.parquet";
 
     // Create dummy files in GCS if they don't exist or ensure they are present
@@ -126,7 +126,7 @@ public class GCSIOBenchmark {
     }
   }
 
-  @Benchmark
+  //  @Benchmark
   public void writeNFilesAndSuccessHadoop() throws IOException {
 
     for (int i = 0; i < NUM_FILES; i++) {
@@ -185,41 +185,47 @@ public class GCSIOBenchmark {
     return totalBytesRead;
   }
 
-  //  @Benchmark
+  @Benchmark
   public long readLargeFileGCSIo() throws IOException {
-    InputFile inputFile = gcsFileIO.newInputFile(testFilePathLarge);
+
     // System.out.println("inputfile"+ inputFile)
     long totalBytesRead = 0;
-    try (InputStream stream = inputFile.newStream()) {
-      int bytesRead;
-      while ((bytesRead = stream.read(buffer)) != -1) {
-        totalBytesRead += bytesRead;
+    for (int i = 1; i <= 10; i++) {
+      InputFile inputFile = gcsFileIO.newInputFile(testFilePathLarge + "lineitem.parquet." + i);
+      try (InputStream stream = inputFile.newStream()) {
+        int bytesRead;
+        while ((bytesRead = stream.read(buffer)) != -1) {
+          totalBytesRead += bytesRead;
+        }
+      } catch (IOException e) {
+        System.err.println("ERROR during stream reading: " + e.getMessage());
+        e.printStackTrace(System.err);
+        return -1;
       }
-    } catch (IOException e) {
-      System.err.println("ERROR during stream reading: " + e.getMessage());
-      e.printStackTrace(System.err);
-      return -1;
     }
-    //    System.out.println("nonhadoop totalbytesread" + totalBytesRead);
+    System.out.println("gcs totalbytesread" + totalBytesRead);
     return totalBytesRead;
   }
 
-  //  @Benchmark
+  @Benchmark
   public long readLargeFileHadoopIo() throws IOException {
-    InputFile inputFile = hadoopFileIO.newInputFile(testFilePathLarge);
 
     long totalBytesRead = 0;
-    try (InputStream stream = inputFile.newStream()) {
-      int bytesRead;
-      while ((bytesRead = stream.read(buffer)) != -1) {
-        //        System.out.println("Reading buffer");
-        totalBytesRead += bytesRead;
+    for (int i = 1; i <= 10; i++) {
+      InputFile inputFile = gcsFileIO.newInputFile(testFilePathLarge + "lineitem.parquet." + i);
+      try (InputStream stream = inputFile.newStream()) {
+        int bytesRead;
+        while ((bytesRead = stream.read(buffer)) != -1) {
+          //        System.out.println("Reading buffer");
+          totalBytesRead += bytesRead;
+        }
+      } catch (IOException e) {
+        System.err.println("ERROR during stream reading: " + e.getMessage());
+        e.printStackTrace(System.err);
+        return -1;
       }
-    } catch (IOException e) {
-      System.err.println("ERROR during stream reading: " + e.getMessage());
-      e.printStackTrace(System.err);
-      return -1;
     }
+    System.out.println("hadoop totalbytesread" + totalBytesRead);
     return totalBytesRead;
   }
 }
