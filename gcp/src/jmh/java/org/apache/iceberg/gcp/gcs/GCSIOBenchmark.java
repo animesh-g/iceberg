@@ -104,7 +104,9 @@ public class GCSIOBenchmark {
     }
   }
 
-  private final String BASE_PATH = "gs://animgupt-iceberg-test/benchmark_write_table/"; // Example
+  private final String BASE_PATH = "gs://animgupt-iceberg-test/benchmark_write_table/";
+  private final String BASE_PATH_HADOOP =
+      "gs://animgupt-iceberg-test/benchmark_write_table_hadoop/";
   private final int NUM_FILES = 10; // Example for N
   private final byte[] RECORD_DATA = "sample,record,data\n".getBytes(Charset.defaultCharset());
 
@@ -127,13 +129,13 @@ public class GCSIOBenchmark {
   @Benchmark
   public void writeNFilesAndSuccessHadoop() throws IOException {
     for (int i = 0; i < NUM_FILES; i++) {
-      String filePath = BASE_PATH + "data_part_0000" + i + ".csv";
+      String filePath = BASE_PATH_HADOOP + "data_part_0000" + i + ".csv";
       OutputFile outputFile = hadoopFileIO.newOutputFile(filePath);
       try (OutputStream os = outputFile.createOrOverwrite()) { // or create()
         os.write(RECORD_DATA);
       }
     }
-    String successFilePath = BASE_PATH + "_SUCCESS";
+    String successFilePath = BASE_PATH_HADOOP + "_SUCCESS";
     OutputFile successFile = hadoopFileIO.newOutputFile(successFilePath);
     try (OutputStream os = successFile.createOrOverwrite()) {
       // Empty file, nothing to write
