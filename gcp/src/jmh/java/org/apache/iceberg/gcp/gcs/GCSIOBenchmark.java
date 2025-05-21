@@ -40,6 +40,7 @@ import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.annotations.TearDown;
+import org.openjdk.jmh.annotations.Threads;
 import org.openjdk.jmh.annotations.Warmup;
 
 @State(Scope.Benchmark) // or Scope.Thread if GCSFileIO is thread-safe and state is per-thread
@@ -92,7 +93,7 @@ public class GCSIOBenchmark {
     // For a real benchmark, you'd upload actual Parquet/Avro/ORC files.
     // For simplicity here, this step is assumed to be done externally.
 
-    buffer = new byte[8192]; // 8KB buffer for reading
+    buffer = new byte[8388608]; // 8MB buffer for reading
     System.out.println("Buffer size: " + buffer.length);
     System.out.println("HadoopFileIO initialized for GCS: " + (this.hadoopFileIO != null));
   }
@@ -185,6 +186,7 @@ public class GCSIOBenchmark {
     return totalBytesRead;
   }
 
+  @Threads(Threads.MAX)
   @Benchmark
   public long readLargeFileGCSIo() throws IOException {
 
@@ -207,6 +209,7 @@ public class GCSIOBenchmark {
     return totalBytesRead;
   }
 
+  @Threads(Threads.MAX)
   @Benchmark
   public long readLargeFileHadoopIo() throws IOException {
 
