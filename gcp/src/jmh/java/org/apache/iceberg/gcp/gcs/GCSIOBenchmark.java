@@ -109,9 +109,9 @@ public class GCSIOBenchmark {
   private final String BASE_PATH = "gs://animgupt-iceberg-test/benchmark_write_table/";
   private final String BASE_PATH_HADOOP =
       "gs://animgupt-iceberg-test/benchmark_write_table_hadoop/";
-  private final int NUM_FILES = 1; // Example for N
+  private final int NUM_FILES = 100; // Example for N
 
-  private final int NUM_RECORD = 10_000_000; // Example for N
+  private final int NUM_RECORD = 25_000_000; // Example for N
   private final byte[] RECORD_DATA = "sample,record,data1\n".getBytes(Charset.defaultCharset());
 
   @Benchmark
@@ -137,7 +137,7 @@ public class GCSIOBenchmark {
   @Benchmark
   public void writeNFilesAndSuccessHadoop() throws IOException {
     String uniqueRunId = UUID.randomUUID().toString();
-    String newPath = BASE_PATH + uniqueRunId + "/";
+    String newPath = BASE_PATH_HADOOP + uniqueRunId + "/";
     for (int i = 0; i < NUM_FILES; i++) {
       String filePath = newPath + "data_part_0000" + i + ".csv";
       OutputFile outputFile = hadoopFileIO.newOutputFile(filePath);
