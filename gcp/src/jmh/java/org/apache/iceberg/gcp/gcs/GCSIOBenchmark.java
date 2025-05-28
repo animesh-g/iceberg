@@ -24,6 +24,7 @@ import java.io.OutputStream;
 import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.iceberg.gcp.GCPProperties;
@@ -108,16 +109,22 @@ public class GCSIOBenchmark {
   private final String BASE_PATH = "gs://animgupt-iceberg-test/benchmark_write_table/";
   private final String BASE_PATH_HADOOP =
       "gs://animgupt-iceberg-test/benchmark_write_table_hadoop/";
-  private final int NUM_FILES = 10; // Example for N
-  private final byte[] RECORD_DATA = "sample,record,data\n".getBytes(Charset.defaultCharset());
+  private final int NUM_FILES = 1; // Example for N
+
+  private final int NUM_RECORD = 10_000_000; // Example for N
+  private final byte[] RECORD_DATA = "sample,record,data1\n".getBytes(Charset.defaultCharset());
 
   @Benchmark
   public void writeNFilesAndSuccessGCS() throws IOException {
+    String uniqueRunId = UUID.randomUUID().toString();
+    String newPath = BASE_PATH + uniqueRunId + "/";
     for (int i = 0; i < NUM_FILES; i++) {
-      String filePath = BASE_PATH + "data_part_0000" + i + ".csv";
+      String filePath = newPath + "data_part_0000" + i + ".csv";
       OutputFile outputFile = gcsFileIO.newOutputFile(filePath);
       try (OutputStream os = outputFile.createOrOverwrite()) { // or create()
-        os.write(RECORD_DATA);
+        for (int j = 0; j < NUM_RECORD; j++) {
+          os.write(RECORD_DATA);
+        }
       }
     }
     String successFilePath = BASE_PATH + "_SUCCESS";
@@ -129,12 +136,15 @@ public class GCSIOBenchmark {
 
   @Benchmark
   public void writeNFilesAndSuccessHadoop() throws IOException {
-
+    String uniqueRunId = UUID.randomUUID().toString();
+    String newPath = BASE_PATH + uniqueRunId + "/";
     for (int i = 0; i < NUM_FILES; i++) {
-      String filePath = BASE_PATH_HADOOP + "data_part_0000" + i + ".csv";
+      String filePath = newPath + "data_part_0000" + i + ".csv";
       OutputFile outputFile = hadoopFileIO.newOutputFile(filePath);
       try (OutputStream os = outputFile.createOrOverwrite()) { // or create()
-        os.write(RECORD_DATA);
+        for (int j = 0; j < NUM_RECORD; j++) {
+          os.write(RECORD_DATA);
+        }
       } catch (IOException e) {
         System.err.println("ERROR during stream writing: " + e.getMessage());
         e.printStackTrace(System.err);
