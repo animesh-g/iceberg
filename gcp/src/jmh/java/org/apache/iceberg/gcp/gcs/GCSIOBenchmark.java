@@ -40,7 +40,6 @@ import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.annotations.TearDown;
-import org.openjdk.jmh.annotations.Threads;
 import org.openjdk.jmh.annotations.Warmup;
 
 @State(Scope.Benchmark) // or Scope.Thread if GCSFileIO is thread-safe and state is per-thread
@@ -111,7 +110,7 @@ public class GCSIOBenchmark {
   private final int NUM_FILES = 10; // Example for N
   private final byte[] RECORD_DATA = "sample,record,data\n".getBytes(Charset.defaultCharset());
 
-  //  @Benchmark
+  @Benchmark
   public void writeNFilesAndSuccessGCS() throws IOException {
     for (int i = 0; i < NUM_FILES; i++) {
       String filePath = BASE_PATH + "data_part_0000" + i + ".csv";
@@ -127,7 +126,7 @@ public class GCSIOBenchmark {
     }
   }
 
-  //  @Benchmark
+  @Benchmark
   public void writeNFilesAndSuccessHadoop() throws IOException {
 
     for (int i = 0; i < NUM_FILES; i++) {
@@ -148,7 +147,7 @@ public class GCSIOBenchmark {
     }
   }
 
-  //  @Benchmark
+  //    @Benchmark
   public long readSmallFileGCSIo() throws IOException {
     InputFile inputFile = gcsFileIO.newInputFile(testFilePathSmall);
     // System.out.println("inputfile"+ inputFile)
@@ -186,8 +185,7 @@ public class GCSIOBenchmark {
     return totalBytesRead;
   }
 
-  @Threads(Threads.MAX)
-  @Benchmark
+  //  @Benchmark
   public long readLargeFileGCSIo() throws IOException {
 
     // System.out.println("inputfile"+ inputFile)
@@ -209,8 +207,7 @@ public class GCSIOBenchmark {
     return totalBytesRead;
   }
 
-  @Threads(Threads.MAX)
-  @Benchmark
+  //  @Benchmark
   public long readLargeFileHadoopIo() throws IOException {
 
     long totalBytesRead = 0;
