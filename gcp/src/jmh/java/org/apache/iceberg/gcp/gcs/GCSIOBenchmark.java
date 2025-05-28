@@ -79,6 +79,7 @@ public class GCSIOBenchmark {
     Configuration conf = new Configuration();
     conf.set("fs.gs.impl", "com.google.cloud.hadoop.fs.gcs.GoogleHadoopFileSystem");
     conf.set("fs.AbstractFileSystem.gs.impl", "com.google.cloud.hadoop.fs.gcs.GoogleHadoopFS");
+    conf.set("fs.gs.auth.type", "APPLICATION_DEFAULT");
 
     hadoopFileIO = new HadoopFileIO(conf);
     hadoopFileIO.initialize(properties);
