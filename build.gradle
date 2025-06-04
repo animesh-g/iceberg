@@ -670,6 +670,7 @@ project(':iceberg-gcp') {
     api project(':iceberg-api')
     implementation project(':iceberg-common')
     implementation project(':iceberg-core')
+    implementation("com.google.cloud.bigdataoss:gcs-connector:3.0.5:shaded")
 
     compileOnly platform(libs.google.libraries.bom)
     compileOnly "com.google.cloud:google-cloud-storage"
@@ -688,6 +689,7 @@ project(':iceberg-gcp') {
     testImplementation libs.esotericsoftware.kryo
     testImplementation libs.mockserver.netty
     testImplementation libs.mockserver.client.java
+
   }
 }
 

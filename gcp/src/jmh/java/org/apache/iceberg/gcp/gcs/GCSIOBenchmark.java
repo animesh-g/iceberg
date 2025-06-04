@@ -1,0 +1,242 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+package org.apache.iceberg.gcp.gcs;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.charset.Charset;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.iceberg.gcp.GCPProperties;
+import org.apache.iceberg.hadoop.HadoopFileIO;
+import org.apache.iceberg.io.InputFile;
+import org.apache.iceberg.io.OutputFile;
+import org.openjdk.jmh.annotations.Benchmark;
+import org.openjdk.jmh.annotations.BenchmarkMode;
+import org.openjdk.jmh.annotations.Fork;
+import org.openjdk.jmh.annotations.Measurement;
+import org.openjdk.jmh.annotations.Mode;
+import org.openjdk.jmh.annotations.OutputTimeUnit;
+import org.openjdk.jmh.annotations.Scope;
+import org.openjdk.jmh.annotations.Setup;
+import org.openjdk.jmh.annotations.State;
+import org.openjdk.jmh.annotations.TearDown;
+import org.openjdk.jmh.annotations.Warmup;
+
+@State(Scope.Benchmark) // or Scope.Thread if GCSFileIO is thread-safe and state is per-thread
+@Fork(value = 1)
+@Warmup(iterations = 3, time = 5)
+@Measurement(iterations = 5, time = 5)
+@BenchmarkMode(Mode.AverageTime)
+@OutputTimeUnit(TimeUnit.MILLISECONDS)
+/**
+ * A benchmark that evaluates the performance of appending files to the table.
+ *
+ * <p>To run this benchmark: <code>
+ *   ./gradlew :iceberg-gcp:jmh
+ *       -PjmhIncludeRegex=GCSIOBenchmark
+ *       -PjmhOutputPath=benchmark/GCSIOBenchmark-benchmark.txt
+ * </code>
+ */
+public class GCSIOBenchmark {
+
+  private GCSFileIO gcsFileIO;
+  private HadoopFileIO hadoopFileIO;
+  private String testFilePathSmall; // gs://your-bucket/path/to/small-file.parquet
+  private String testFilePathLarge; // gs://your-bucket/path/to/large-file.parquet
+  private byte[] buffer;
+
+  @Setup
+  public void before() throws IOException {
+    gcsFileIO = new GCSFileIO();
+    Map<String, String> properties = new HashMap<>();
+    ;
+    // Configure GCPProperties:
+    properties.put(GCPProperties.GCS_PROJECT_ID, "animgupt-gcs-prober");
+    // properties.put(GCPProperties.GCS_SERVICE_ACCOUNT_KEY_FILE, "/path/to/your/key.json");
+    // Or ensure Application Default Credentials are set up in the environment.
+    gcsFileIO.initialize(properties);
+
+    Configuration conf = new Configuration();
+    conf.set("fs.gs.impl", "com.google.cloud.hadoop.fs.gcs.GoogleHadoopFileSystem");
+    conf.set("fs.AbstractFileSystem.gs.impl", "com.google.cloud.hadoop.fs.gcs.GoogleHadoopFS");
+    conf.set("fs.gs.auth.type", "APPLICATION_DEFAULT");
+
+    hadoopFileIO = new HadoopFileIO(conf);
+    hadoopFileIO.initialize(properties);
+
+    // Define paths to pre-existing test files in your GCS bucket
+    testFilePathSmall = "gs://animgupt-iceberg-test/output.parquet";
+    testFilePathLarge = "gs://animgupt-iceberg-test/lineitem_table2/";
+    // testFilePathLarge = "gs://your-benchmark-bucket/test-data/large-file.parquet";
+
+    // Create dummy files in GCS if they don't exist or ensure they are present
+    // For a real benchmark, you'd upload actual Parquet/Avro/ORC files.
+    // For simplicity here, this step is assumed to be done externally.
+
+    buffer = new byte[8388608]; // 8MB buffer for reading
+    System.out.println("Buffer size: " + buffer.length);
+    System.out.println("HadoopFileIO initialized for GCS: " + (this.hadoopFileIO != null));
+  }
+
+  @TearDown()
+  public void after() throws IOException {
+    if (gcsFileIO != null) {
+      gcsFileIO.close();
+    }
+  }
+
+  private final String BASE_PATH = "gs://animgupt-iceberg-test/benchmark_write_table/";
+  private final String BASE_PATH_HADOOP =
+      "gs://animgupt-iceberg-test/benchmark_write_table_hadoop/";
+  private final int NUM_FILES = 100; // Example for N
+
+  private final int NUM_RECORD = 25_000_000; // Example for N
+  private final byte[] RECORD_DATA = "sample,record,data1\n".getBytes(Charset.defaultCharset());
+
+  @Benchmark
+  public void writeNFilesAndSuccessGCS() throws IOException {
+    String uniqueRunId = UUID.randomUUID().toString();
+    String newPath = BASE_PATH + uniqueRunId + "/";
+    for (int i = 0; i < NUM_FILES; i++) {
+      String filePath = newPath + "data_part_0000" + i + ".csv";
+      OutputFile outputFile = gcsFileIO.newOutputFile(filePath);
+      try (OutputStream os = outputFile.createOrOverwrite()) { // or create()
+        for (int j = 0; j < NUM_RECORD; j++) {
+          os.write(RECORD_DATA);
+        }
+      }
+    }
+    String successFilePath = BASE_PATH + "_SUCCESS";
+    OutputFile successFile = gcsFileIO.newOutputFile(successFilePath);
+    try (OutputStream os = successFile.createOrOverwrite()) {
+      // Empty file, nothing to write
+    }
+  }
+
+  @Benchmark
+  public void writeNFilesAndSuccessHadoop() throws IOException {
+    String uniqueRunId = UUID.randomUUID().toString();
+    String newPath = BASE_PATH_HADOOP + uniqueRunId + "/";
+    for (int i = 0; i < NUM_FILES; i++) {
+      String filePath = newPath + "data_part_0000" + i + ".csv";
+      OutputFile outputFile = hadoopFileIO.newOutputFile(filePath);
+      try (OutputStream os = outputFile.createOrOverwrite()) { // or create()
+        for (int j = 0; j < NUM_RECORD; j++) {
+          os.write(RECORD_DATA);
+        }
+      } catch (IOException e) {
+        System.err.println("ERROR during stream writing: " + e.getMessage());
+        e.printStackTrace(System.err);
+        return;
+      }
+    }
+    String successFilePath = BASE_PATH_HADOOP + "_SUCCESS";
+    OutputFile successFile = hadoopFileIO.newOutputFile(successFilePath);
+    try (OutputStream os = successFile.createOrOverwrite()) {
+      // Empty file, nothing to write
+    }
+  }
+
+  //    @Benchmark
+  public long readSmallFileGCSIo() throws IOException {
+    InputFile inputFile = gcsFileIO.newInputFile(testFilePathSmall);
+    // System.out.println("inputfile"+ inputFile)
+    long totalBytesRead = 0;
+    try (InputStream stream = inputFile.newStream()) {
+      int bytesRead;
+      while ((bytesRead = stream.read(buffer)) != -1) {
+        totalBytesRead += bytesRead;
+      }
+    } catch (IOException e) {
+      System.err.println("ERROR during stream reading: " + e.getMessage());
+      e.printStackTrace(System.err);
+      return -1;
+    }
+    //    System.out.println("nonhadoop totalbytesread" + totalBytesRead);
+    return totalBytesRead;
+  }
+
+  //  @Benchmark
+  public long readSmallFileHadoopIo() throws IOException {
+    InputFile inputFile = hadoopFileIO.newInputFile(testFilePathSmall);
+
+    long totalBytesRead = 0;
+    try (InputStream stream = inputFile.newStream()) {
+      int bytesRead;
+      while ((bytesRead = stream.read(buffer)) != -1) {
+        //        System.out.println("Reading buffer");
+        totalBytesRead += bytesRead;
+      }
+    } catch (IOException e) {
+      System.err.println("ERROR during stream reading: " + e.getMessage());
+      e.printStackTrace(System.err);
+      return -1;
+    }
+    return totalBytesRead;
+  }
+
+  //  @Benchmark
+  public long readLargeFileGCSIo() throws IOException {
+
+    // System.out.println("inputfile"+ inputFile)
+    long totalBytesRead = 0;
+    for (int i = 1; i <= 100; i++) {
+      InputFile inputFile = gcsFileIO.newInputFile(testFilePathLarge + "lineitem.parquet." + i);
+      try (InputStream stream = inputFile.newStream()) {
+        int bytesRead;
+        while ((bytesRead = stream.read(buffer)) != -1) {
+          totalBytesRead += bytesRead;
+        }
+      } catch (IOException e) {
+        System.err.println("ERROR during stream reading: " + e.getMessage());
+        e.printStackTrace(System.err);
+        return -1;
+      }
+    }
+    System.out.println("gcs totalbytesread" + totalBytesRead);
+    return totalBytesRead;
+  }
+
+  //  @Benchmark
+  public long readLargeFileHadoopIo() throws IOException {
+
+    long totalBytesRead = 0;
+    for (int i = 1; i <= 100; i++) {
+      InputFile inputFile = gcsFileIO.newInputFile(testFilePathLarge + "lineitem.parquet." + i);
+      try (InputStream stream = inputFile.newStream()) {
+        int bytesRead;
+        while ((bytesRead = stream.read(buffer)) != -1) {
+          //        System.out.println("Reading buffer");
+          totalBytesRead += bytesRead;
+        }
+      } catch (IOException e) {
+        System.err.println("ERROR during stream reading: " + e.getMessage());
+        e.printStackTrace(System.err);
+        return -1;
+      }
+    }
+    System.out.println("hadoop totalbytesread" + totalBytesRead);
+    return totalBytesRead;
+  }
+}
