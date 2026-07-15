@@ -80,7 +80,9 @@ public class GCSIOBenchmark {
     Configuration conf = new Configuration();
     conf.set("fs.gs.impl", "com.google.cloud.hadoop.fs.gcs.GoogleHadoopFileSystem");
     conf.set("fs.AbstractFileSystem.gs.impl", "com.google.cloud.hadoop.fs.gcs.GoogleHadoopFS");
-    conf.set("fs.gs.auth.type", "APPLICATION_DEFAULT");
+    conf.set(
+        "fs.gs.auth.type",
+        "APPLICATION_DEFAULT"); // Write APIs in hadoop doesn't seem to work without it.
 
     hadoopFileIO = new HadoopFileIO(conf);
     hadoopFileIO.initialize(properties);
@@ -116,6 +118,7 @@ public class GCSIOBenchmark {
 
   @Benchmark
   public void writeNFilesAndSuccessGCS() throws IOException {
+    // Unique ID to avoid overwriting.
     String uniqueRunId = UUID.randomUUID().toString();
     String newPath = BASE_PATH + uniqueRunId + "/";
     for (int i = 0; i < NUM_FILES; i++) {
@@ -136,6 +139,7 @@ public class GCSIOBenchmark {
 
   @Benchmark
   public void writeNFilesAndSuccessHadoop() throws IOException {
+    // Unique ID to avoid overwriting.
     String uniqueRunId = UUID.randomUUID().toString();
     String newPath = BASE_PATH_HADOOP + uniqueRunId + "/";
     for (int i = 0; i < NUM_FILES; i++) {
