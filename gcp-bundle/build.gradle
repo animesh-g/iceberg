@@ -68,13 +68,13 @@ project(":iceberg-gcp-bundle") {
 
     // Relocate Google Cloud Storage and core Google libraries to avoid cluster conflicts
     // relocate 'com.google.cloud', 'org.apache.iceberg.shaded.com.google.cloud'
-    relocate('com.google.cloud', 'org.apache.iceberg.gcp.shaded.com.google.cloud') {
-        exclude 'com.google.cloud.gcs.analyticscore.**'
-    }
-    relocate 'com.google.api', 'org.apache.iceberg.shaded.com.google.api'
-    relocate 'com.google.auth', 'org.apache.iceberg.shaded.com.google.auth'
-    relocate 'io.grpc', 'org.apache.iceberg.shaded.io.grpc'
-    relocate 'com.google.protobuf', 'org.apache.iceberg.shaded.com.google.protobuf'
+//    relocate('com.google.cloud', 'org.apache.iceberg.gcp.shaded.com.google.cloud') {
+  //      exclude 'com.google.cloud.gcs.analyticscore.**'
+    //}
+    // relocate 'com.google.api', 'org.apache.iceberg.shaded.com.google.api'
+    // relocate 'com.google.auth', 'org.apache.iceberg.shaded.com.google.auth'
+    // relocate 'io.grpc', 'org.apache.iceberg.shaded.io.grpc'
+    // relocate 'com.google.protobuf', 'org.apache.iceberg.shaded.com.google.protobuf'
   }
 
   jar {
