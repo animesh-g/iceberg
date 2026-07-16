@@ -59,10 +59,10 @@ project(":iceberg-gcp-bundle") {
 
     // relocate GCP-specific versions
     relocate 'com.fasterxml.jackson', 'org.apache.iceberg.gcp.shaded.com.fasterxml.jackson'
-    relocate 'com.google.common', 'org.apache.iceberg.gcp.shaded.com.google.common'
+    // relocate 'com.google.common', 'org.apache.iceberg.gcp.shaded.com.google.common'
     relocate 'com.google.errorprone', 'org.apache.iceberg.gcp.shaded.com.google.errorprone'
     relocate 'com.google.gson', 'org.apache.iceberg.gcp.shaded.com.google.gson'
-    relocate 'com.google.protobuf', 'org.apache.iceberg.gcp.shaded.com.google.protobuf'
+    // relocate 'com.google.protobuf', 'org.apache.iceberg.gcp.shaded.com.google.protobuf'
     relocate 'org.apache.http', 'org.apache.iceberg.gcp.shaded.org.apache.http'
     relocate 'io.netty', 'org.apache.iceberg.gcp.shaded.io.netty'
 
