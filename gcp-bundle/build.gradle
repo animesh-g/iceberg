@@ -66,7 +66,9 @@ project(":iceberg-gcp-bundle") {
     relocate 'org.apache.http', 'org.apache.iceberg.gcp.shaded.org.apache.http'
     relocate 'io.netty', 'org.apache.iceberg.gcp.shaded.io.netty'
 
-    // Relocate Google Cloud Storage and core Google libraries to avoid cluster conflicts
+    mergeServiceFiles()
+
+// Relocate Google Cloud Storage and core Google libraries to avoid cluster conflicts
     // relocate 'com.google.cloud', 'org.apache.iceberg.shaded.com.google.cloud'
 //    relocate('com.google.cloud', 'org.apache.iceberg.gcp.shaded.com.google.cloud') {
   //      exclude 'com.google.cloud.gcs.analyticscore.**'
