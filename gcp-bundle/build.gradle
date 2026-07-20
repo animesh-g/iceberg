@@ -39,20 +39,24 @@ project(":iceberg-gcp-bundle") {
     implementation "com.google.cloud:google-cloud-bigquery"
     implementation "com.google.cloud:google-cloud-core"
     implementation "com.google.cloud:google-cloud-kms"
-    implementation libs.gcs.analytics.core
+    implementation(libs.gcs.analytics.core) {
+        exclude group: 'io.grpc'
+        exclude group: 'com.google.protobuf'
+    }
+    implementation "io.grpc:grpc-protobuf"
+    implementation "com.google.protobuf:protobuf-java"
   }
 
-  shadowJar {
+shadowJar {
     archiveClassifier.set(null)
     zip64 true
+    mergeServiceFiles() // Fixes the gRPC NameResolver issue
 
-    // include the LICENSE and NOTICE files for the shaded Jar
     from(projectDir) {
-      include 'LICENSE'
-      include 'NOTICE'
+        include 'LICENSE'
+        include 'NOTICE'
     }
 
-    // relocate GCP-specific versions
     relocate 'com.fasterxml.jackson', 'org.apache.iceberg.gcp.shaded.com.fasterxml.jackson'
     relocate 'com.google.common', 'org.apache.iceberg.gcp.shaded.com.google.common'
     relocate 'com.google.errorprone', 'org.apache.iceberg.gcp.shaded.com.google.errorprone'
@@ -60,7 +64,8 @@ project(":iceberg-gcp-bundle") {
     relocate 'com.google.protobuf', 'org.apache.iceberg.gcp.shaded.com.google.protobuf'
     relocate 'org.apache.http', 'org.apache.iceberg.gcp.shaded.org.apache.http'
     relocate 'io.netty', 'org.apache.iceberg.gcp.shaded.io.netty'
-  }
+}
+
 
   jar {
     enabled = false
