@@ -75,6 +75,11 @@ shadowJar {
     relocate 'com.google.type', 'org.apache.iceberg.gcp.shaded.com.google.type'
     relocate 'com.google.rpc', 'org.apache.iceberg.gcp.shaded.com.google.rpc'
     relocate 'io.grpc', 'org.apache.iceberg.gcp.shaded.io.grpc'
+
+    // open telemetry shading to avoid conflicts with other libraries
+    relocate 'io.opentelemetry', 'org.apache.iceberg.gcp.shaded.io.opentelemetry'
+    relocate 'io.opencensus', 'org.apache.iceberg.gcp.shaded.io.opencensus'
+    relocate 'io.perfmark', 'org.apache.iceberg.gcp.shaded.io.perfmark'
 }
 
 
